@@ -22,16 +22,24 @@ class DBCONNECTION():
             print("Database connection failed.")
         self.cur = self.conn.cursor()
 
-    def create_table(self):
-        self.cur.execute('''CREATE TABLE MEMBERS
-              (ID INT PRIMARY KEY     NOT NULL,
-              NAME           TEXT    NOT NULL,
-              AGE            INT     NOT NULL,
-              ADDRESS        CHAR(50),
-              SALARY         REAL);''')
-        self.close_connection()
-
-    def close_connection(self):
-        """Close connection to the database"""
+    def commit_session(self):
+        """Commit session"""
         self.conn.commit()
-        self.conn.close()
+
+
+class Table(DBCONNECTION):
+    """Class to handle creating tables"""
+
+    def __init__(self, table_name, sql_query):
+        DBCONNECTION.__init__(self)
+        self.table_name = table_name
+        self.cur.execute(f'''CREATE TABLE IF NOT EXISTS {self.table_name}
+        ({sql_query});''')
+        self.commit_session()
+
+    def insert_record(self, columns, values):
+        self.cur.execute(f"""
+        INSERT INTO {self.table_name} ({columns})
+        VALUES ({values})
+        """)
+        self.commit_session()
